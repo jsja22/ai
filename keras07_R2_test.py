@@ -22,16 +22,17 @@ x_pred = array([16,17,18])
 
 #2. 모델 구성
 model = Sequential()
-model.add(Dense(1000, input_dim =1, activation='relu'))
-model.add(Dense(60))
-model.add(Dense(999))
-model.add(Dense(1000))
-model.add(Dense(64))
+model.add(Dense(2, input_dim =1, activation='relu'))
+model.add(Dense(10))
+model.add(Dense(11))
+model.add(Dense(11))
+model.add(Dense(11))
+model.add(Dense(10))
 model.add(Dense(1))
 
 #3. 컴파일, 훈련
 model.compile(loss='mse', optimizer = 'adam', metrics = 'mae')
-model.fit(x_train, y_train, epochs = 200, batch_size=1, validation_split=0.2)   #x_train , y_train을 validation_split =0.2로 20%를 나누어쓰겠다.
+model.fit(x_train, y_train, epochs = 101, batch_size=1, validation_split=0.2)   #x_train , y_train을 validation_split =0.2로 20%를 나누어쓰겠다.
 
 
 #4. 평가, 예측
