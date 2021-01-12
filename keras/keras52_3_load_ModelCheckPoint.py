@@ -13,7 +13,7 @@ x_test = x_test.reshape(-1,28,28,1)/255.
 
 y_train = to_categorical(y_train)
 y_test = to_categorical(y_test)
-
+#
 # model = Sequential()
 # model.add(Conv2D(filters = 256,kernel_size = (2,2),padding='same',strides = 1,input_shape=(28,28,1)))
 # model.add(MaxPooling2D(pool_size=2))
