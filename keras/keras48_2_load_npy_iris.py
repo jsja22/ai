@@ -18,6 +18,7 @@ print(y_train)
 print(x_test)
 print(y_test)
 
+
 scalar = MinMaxScaler()
 scalar.fit(x_train)
 x_train = scalar.transform(x_train)

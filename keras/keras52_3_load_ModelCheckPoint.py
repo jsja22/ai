@@ -54,17 +54,20 @@ y_test = to_categorical(y_test)
 # print('model_loss : ',result1[0])
 # print('model_accuracy : ',result1[1])
 
-model2 = load_model('C:/data/modelcheckpoint/k52_1_mnist_checkpoint.hdf5')   
+model2 = load_model('C:/data/modelcheckpoint/k52_1_mnist_checkpoint.hdf5')    #hdf5->model과 weight가 들어가있음
 result2= model2.evaluate(x_test,y_test,batch_size=8)
 print("load_checkpoint_model_loss: ", result2[0])
 print("load_checkpoint_model_accuracy: ", result2[1])
 
 #weight값이 동일하기때문에 훈련값은 항상동일
 
-#checkpoint model 
+#checkpoint model #loss가 최저를 찍은 부분이 저장됨
 #load_checkpoint_model_loss:  0.06835830956697464
 #load_checkpoint_model_accuracy:  0.980400025844574
 
 # checkpoint가 성능이 더좋다.
 # loss기준으로 더 줄어듬
 
+#modelcheck point->훈련하는 동안 가중치를 저장
+# 
+# pandas에서 csv 로불러오면 엄청느려서 numpy로 바꿔줘야함. 

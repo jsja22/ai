@@ -27,7 +27,7 @@ model.add(Dense(32,activation='relu'))
 model.add(Dense(16,activation='relu'))
 model.add(Dense(10,activation='softmax'))
 '''
-model = load_model('../data/h5/k51_1_model1.h5')
+model = load_model('C:/data/h5/k51_1_model1.h5')
 
 model.summary()
 

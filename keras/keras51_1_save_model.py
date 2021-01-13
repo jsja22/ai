@@ -67,5 +67,4 @@ plt.legend('accuracy','val_accuracy')
 plt.show()
 
 
-
-
+#model.save 메서드를 호출하여 모델의 구조, 가중치, 훈련 설정을 하나의 파일/폴더에 저장

@@ -12,8 +12,7 @@ x_test = x_test.reshape(-1,28,28,1)/255.
 
 
 modelpath = 'C:/data/modelcheckpoint/k45_mnist_{epoch:02d}-{val_loss:.4f}.hdf5'
-cp = ModelCheckpoint(filepath = modelpath, monitor='val_loss',save_best_only = True, mode = 'auto')
-es = EarlyStopping(monitor='val_loss',patience=10)
+cp = ModelCheckpoint(filepath = modelpath, monitor='val_loss',save_best_only = True, mode = 'auto')  #period=5 다섯 번째 에포크마다 가중치를 저장하기 위한 콜백을 만듭니다
 y_train = to_categorical(y_train)
 y_test = to_categorical(y_test)
 
