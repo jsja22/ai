@@ -85,3 +85,5 @@ df3 = df2.values
 print(df3)
 
 np.save('../data/npy/samsung_1.npy', arr=df3)
+
+
