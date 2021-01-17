@@ -53,7 +53,7 @@ x2 = scaler2.transform(x2)
 print(x1)
 print(x2)
 ################################전처리 완료
-size1 = 6
+size1 = 12
 x1 = split_data(x1, size1)
 x2 = split_data(x2, size1)
 
@@ -63,12 +63,12 @@ x2 = x2[:-2,:,:]
 size2 =  2
 
 y= split_data(y,size2)
-y= y[6:]
+y= y[12:]
 
 x1_pred = x1[-20:,:,:]
 x2_pred = x2[-20:,:,:]
-print(x1.shape) #(1080, 6, 6)
-print(x2.shape) #(1080, 6, 6)
+print(x1.shape) #(1072, 12, 6)
+print(x2.shape) #(1072, 12, 6)
 print(y.shape)  #(1078, 2)
 
 
