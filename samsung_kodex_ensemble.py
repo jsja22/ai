@@ -79,38 +79,32 @@ x1_train, x1_val, x2_train, x2_val, y_train, y_val = train_test_split(x1_train, 
 #leakrelu 썻는데 load에서 불러와지지 않는다 이유 해결해보기!
 
 inputs1 = Input(shape=(x1_train.shape[1],x1_train.shape[2]))
-dense1= LSTM(256,activation='relu')(inputs1)
+dense1= LSTM(64,activation='relu')(inputs1)
 dense1 = BatchNormalization()(dense1)
+dense1 = Dense(1024,activation='relu')(dense1)
+dense1 = Dropout(0.4)(dense1)
 dense1 = Dense(512,activation='relu')(dense1)
-dense1 = Dropout(0.25)(dense1)
-dense1 = Dense(128,activation='relu')(dense1)
-dense1 = Dropout(0.2)(dense1)
-dense1 = Dense(128,activation='relu')(dense1)
-dense1 = Dense(128,activation='relu')(dense1)
 
 
 
 
 inputs2 = Input(shape=(x1_train.shape[1],x1_train.shape[2]))
-dense2= LSTM(256,activation='relu')(inputs2)
+dense2= LSTM(64,activation='relu')(inputs2)
 dense2 = BatchNormalization()(dense2)
+dense2 = Dense(1024,activation='relu')(dense2)
+dense2 = Dropout(0.4)(dense2)
 dense2 = Dense(512,activation='relu')(dense2)
-dense2 = Dropout(0.2)(dense1)
-dense2 = Dense(64,activation='relu')(dense2)
-dense2 = Dropout(0.15)(dense1)
-dense2 = Dense(64,activation='relu')(dense2)
-dense2 = Dense(64,activation='relu')(dense2)
 
 
 merge1 = concatenate([dense1,dense2])
-middle1 = Dense(64,activation='relu')(merge1)
-dense2 = Dropout(0.2)(dense1)
-middle1 = Dense(64,activation='relu')(middle1)
+middle1 = Dense(512,activation='relu')(merge1)
+middle1 = Dropout(0.2)(middle1)
+middle1 = Dense(256,activation='relu')(middle1)
 middle1 = Dense(128,activation='relu')(middle1)
 middle1 = Dense(64,activation='relu')(middle1)
-middle1 = Dense(64,activation='relu')(middle1)
+middle1 = Dense(32,activation='relu')(middle1)
 middle1 = Dense(16,activation='relu')(middle1)
-middle1 = Dense(4,activation='relu')(middle1)
+middle1 = Dense(8,activation='relu')(middle1)
 outputs = Dense(2)(middle1)
 model = Model(inputs=[inputs1,inputs2], outputs=outputs)
 
@@ -196,3 +190,15 @@ print("1/18일 예측 시가는?", y_predict[-1,0],"1/19일 예측 시가는?", 
 #R2 :  0.9026400627530704
 
 #1/19일 예측 시가는? 90057.17
+
+#size 20, BatchNormalization 적용
+#loss, mae :  1014967.875 786.8383178710938
+#RMSE :  1007.4564933459484
+#R2 :  0.9824107521423031
+
+#1/18일 예측 시가는? 92615.15 1/19일 예측 시가는? 92722.27
+
+#loss, mae :  1722627.625 1036.841064453125
+#RMSE :  1312.4891897971959
+#R2 :  0.9701306354393802
+#1/18일 예측 시가는? 90683.5 1/19일 예측 시가는? 90760.68
