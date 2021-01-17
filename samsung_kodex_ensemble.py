@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Model,Sequential
-from tensorflow.keras.layers import Dense, Input, LSTM, Dropout, Conv1D, Flatten, MaxPooling1D, LeakyReLU
+from tensorflow.keras.layers import Dense, Input, LSTM, Dropout, Conv1D, Flatten, MaxPooling1D, LeakyReLU , GRU , BatchNormalization
 from sklearn.metrics import mean_squared_error, r2_score
 from tensorflow.keras.layers import concatenate, Concatenate
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -53,7 +53,7 @@ x2 = scaler2.transform(x2)
 print(x1)
 print(x2)
 ################################전처리 완료
-size1 = 12
+size1 = 20
 x1 = split_data(x1, size1)
 x2 = split_data(x2, size1)
 
@@ -63,58 +63,98 @@ x2 = x2[:-2,:,:]
 size2 =  2
 
 y= split_data(y,size2)
-y= y[12:]
+y= y[size1:,:]
 
 x1_pred = x1[-20:,:,:]
 x2_pred = x2[-20:,:,:]
-print(x1.shape) #(1072, 12, 6)
-print(x2.shape) #(1072, 12, 6)
-print(y.shape)  #(1078, 2)
+print(x1.shape) #(1064, 20, 6)
+print(x2.shape) #(1064, 20, 6)
+print(y.shape)  #(1064, 2)
 
 
 #train test 분류
 x1_train, x1_test, x2_train, x2_test, y_train, y_test = train_test_split(x1, x2, y, train_size=0.8, shuffle=True, random_state=99)
 x1_train, x1_val, x2_train, x2_val, y_train, y_val = train_test_split(x1_train, x2_train, y_train, train_size=0.8, shuffle = True,random_state=99)
 
+#leakrelu 썻는데 load에서 불러와지지 않는다 이유 해결해보기!
+
+inputs1 = Input(shape=(x1_train.shape[1],x1_train.shape[2]))
+dense1= LSTM(256,activation='relu')(inputs1)
+dense1 = BatchNormalization()(dense1)
+dense1 = Dense(512,activation='relu')(dense1)
+dense1 = Dropout(0.25)(dense1)
+dense1 = Dense(128,activation='relu')(dense1)
+dense1 = Dropout(0.2)(dense1)
+dense1 = Dense(128,activation='relu')(dense1)
+dense1 = Dense(128,activation='relu')(dense1)
+
+
+
+
+inputs2 = Input(shape=(x1_train.shape[1],x1_train.shape[2]))
+dense2= LSTM(256,activation='relu')(inputs2)
+dense2 = BatchNormalization()(dense2)
+dense2 = Dense(512,activation='relu')(dense2)
+dense2 = Dropout(0.2)(dense1)
+dense2 = Dense(64,activation='relu')(dense2)
+dense2 = Dropout(0.15)(dense1)
+dense2 = Dense(64,activation='relu')(dense2)
+dense2 = Dense(64,activation='relu')(dense2)
+
+
+merge1 = concatenate([dense1,dense2])
+middle1 = Dense(64,activation='relu')(merge1)
+dense2 = Dropout(0.2)(dense1)
+middle1 = Dense(64,activation='relu')(middle1)
+middle1 = Dense(128,activation='relu')(middle1)
+middle1 = Dense(64,activation='relu')(middle1)
+middle1 = Dense(64,activation='relu')(middle1)
+middle1 = Dense(16,activation='relu')(middle1)
+middle1 = Dense(4,activation='relu')(middle1)
+outputs = Dense(2)(middle1)
+model = Model(inputs=[inputs1,inputs2], outputs=outputs)
+
+
+"""
 #모델구성
-input1 = Input(shape=(6,6))
-dense1 = LSTM(256,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(input1)
-dense1 = Dense(256,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(dense1)
-dense1 = Dense(128,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(dense1)
-dense1 = Dense(64,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(dense1)
-dense1 = Dense(64,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(dense1)
-dense1 = Dense(16,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(dense1)
+input1 = Input(shape=(20,6))
+dense1 = LSTM(256,activation='relu')(input1)
+dense1 = Dense(256,activation='relu')(dense1)
+dense1 = Dense(128,activation='relu')(dense1)
+dense1 = Dense(64,activation='relu')(dense1)
+dense1 = Dense(64,activation='relu')(dense1)
+dense1 = Dense(16,activation='relu')(dense1)
 dense1 = Dense(2)(dense1)
 
 
-input2 = Input(shape=(6,6))
-dense2 = LSTM(128,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(input2)
-dense2 = Dense(64,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(dense2)
-dense2 = Dense(64,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(dense2)
-dense2 = Dense(16,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(dense2)
-dense2 = Dense(4,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(dense2)
-dense2 = Dense(4,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(dense2)
+input2 = Input(shape=(20,6))
+dense2 = LSTM(128,activation='relu')(input2)
+dense2 = Dense(64,activation='relu')(dense2)
+dense2 = Dense(64,activation='relu')(dense2)
+dense2 = Dense(16,activation='relu')(dense2)
+dense2 = Dense(4,activation='relu')(dense2)
+dense2 = Dense(4,activation='relu')(dense2)
 dense2 = Dense(2)(dense2)
 
 merge1 = concatenate([dense1, dense2])
-middle1 = Dense(128,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(merge1)
-middle1 = Dense(64,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(middle1)
-middle1 = Dense(64,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(middle1)
-middle1 = Dense(64,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(middle1)
-middle1 = Dense(16,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(middle1)
-middle1 = Dense(4,activation=tf.keras.layers.LeakyReLU(alpha=0.01))(middle1)
+middle1 = Dense(128,activation='relu')(merge1)
+middle1 = Dense(64,activation='relu')(middle1)
+middle1 = Dense(64,activation='relu')(middle1)
+middle1 = Dense(64,activation='relu')(middle1)
+middle1 = Dense(16,activation='relu')(middle1)
+middle1 = Dense(4,activation='relu')(middle1)
 outputs = Dense(2)(middle1)
 
-model = Model(inputs=[input1,input2], outputs=outputs)
-
+model = Model(inputs=[inputs1,inputs2], outputs=outputs)
+"""
 model.summary()
 
 #컴파일 및 훈련
 model.compile(loss='mse', optimizer='adam', metrics=['mae'])
-es = EarlyStopping(monitor='val_loss', patience=80, mode='auto')
-modelpath= 'c:/data/modelcheckpoint/samsung_kodex_ckp.hdf5'
+es = EarlyStopping(monitor='val_loss', patience=75, mode='auto')
+modelpath= 'C:/data/modelcheckpoint/samsung_kodex_ckp.hdf5'
 cp = ModelCheckpoint(modelpath, monitor='val_loss', save_best_only=True, mode='auto')
-model.fit([x1_train,x2_train], y_train, batch_size=64, epochs=1000, validation_data=([x1_val,x2_val],y_val),verbose=1, callbacks=[es, cp])
+model.fit([x1_train,x2_train], y_train, batch_size=64, epochs=1500, validation_data=([x1_val,x2_val],y_val),verbose=1, callbacks=[es, cp])
 
 model.save('C:/data/h5/samsung_kodex.h5')
 
@@ -140,15 +180,19 @@ plt.legend()
 plt.grid()
 plt.show()
 
-print("1/19일 예측 시가는?", y_predict[-1,1])
+print("1/18일 예측 시가는?", y_predict[-1,0],"1/19일 예측 시가는?", y_predict[-1,1])
 
+#size 6 , epochs 80
 #loss, mae :  10918207.0 1807.4273681640625
 #RMSE :  3304.271139318148
 #R2 :  0.8926200914040961
 
-#1/19일 예측 시가는? 92482.266
-
 #1/19일 예측 시가는? 91997.305
 
 
- 
+#size 12 , epochs 80
+#loss, mae :  6018545.0 1605.6842041015625
+#RMSE :  2453.2722663875584
+#R2 :  0.9026400627530704
+
+#1/19일 예측 시가는? 90057.17
