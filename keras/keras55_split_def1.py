@@ -28,6 +28,4 @@ print(x)
 print(y)
 
 print(x.shape)
-print(y.shape)
-
 

@@ -25,10 +25,8 @@ def split_xy(dataset, time_steps, y_column):
         x.append(tmp_x)
         y.append(tmp_y)     
     return np.array(x), np.array(y)
-solar= pd.read_csv('C:/data/csv/train.csv', index_col=0, header=0, encoding='cp949')
+solar= pd.read_csv('C:/data/csv/train.csv', index_col=None, header=0)
 print(solar.columns) #Index(['Hour', 'Minute', 'DHI', 'DNI', 'WS', 'RH', 'T', 'TARGET'], dtype='object')
-submit = pd.read_csv('C:/data/csv/sample_submission.csv',index_col =0, header =0)
-test = pd.read_csv('C:/data/csv/sum_test.csv',index_col =0, header =0)
 print(solar.shape) #(52560, 8)
 print(solar.isnull().sum())
 
