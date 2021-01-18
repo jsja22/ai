@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Model, Sequential
-from tensorflow.keras.layers import Dense, LSTM, Input, Dropout, Conv1D, MaxPooling1D, Flatten
+from tensorflow.keras.layers import Dense, LSTM, Input, Dropout, Conv1D, MaxPooling1D, Flatten 
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.metrics import mean_squared_error,r2_score
 
@@ -61,22 +62,35 @@ print(y_train.shape, y_test.shape)  #(1916,) (479,)
 model = Sequential()
 
 model.add(LSTM(256, activation='relu', input_shape=(6,x.shape[2])))
-model.add(Dropout(0.2))
+#model.add(Dropout(0.2))
 model.add(Dense(512, activation='relu'))
-model.add(Dropout(0.2))
+#model.add(Dropout(0.2))
 model.add(Dense(256, activation='relu'))
-model.add(Dropout(0.2))
+#model.add(Dropout(0.2))
 model.add(Dense(256, activation='relu'))
 model.add(Dense(64, activation='relu'))
 model.add(Dense(16, activation='relu'))
 model.add(Dense(1))
+"""
+model.add(LSTM(256, activation=tf.keras.layers.LeakyReLU(alpha=0.01), input_shape=(6,x.shape[2])))
+#model.add(Dropout(0.2))
+model.add(Dense(512, activation=tf.keras.layers.LeakyReLU(alpha=0.01)))
+#model.add(Dropout(0.2))
+model.add(Dense(256, activation=tf.keras.layers.LeakyReLU(alpha=0.01)))
+#model.add(Dropout(0.2))
+model.add(Dense(256, activation=tf.keras.layers.LeakyReLU(alpha=0.01)))
+model.add(Dense(64, activation=tf.keras.layers.LeakyReLU(alpha=0.01)))
+model.add(Dense(16, activation=tf.keras.layers.LeakyReLU(alpha=0.01)))
+model.add(Dense(1))
+"""
 
 #컴파일 및 훈련
+#sgd = tf.keras.optimizers.SGD(learning_rate=0.01)
 model.compile(loss='mse', optimizer='adam', metrics=['mae'])
 es = EarlyStopping(monitor='val_loss', patience=80, mode='auto')
 modelpath= 'c:/data/modelcheckpoint/samsung_ckp.hdf5'
 cp = ModelCheckpoint(modelpath, monitor='val_loss', save_best_only=True, mode='auto')
-model.fit(x_train, y_train, batch_size=64, epochs=1000, validation_data=(x_val,y_val),verbose=1, callbacks=[es, cp])
+hist= model.fit(x_train, y_train, batch_size=64, epochs=2000, validation_data=(x_val,y_val),verbose=1, callbacks=[es, cp])
 
 model.save('C:/data/h5/samsung_1.h5')
 
@@ -93,10 +107,9 @@ p_p = int(y_predict[-1])
 print("1/15일 예측 삼성 종가 : ", p_p)
 print(y_predict.shape)
 
-
-
 for i in range(len(y_predict)):
     print("실제 종가",y[-(y_predict.shape[0])+i],"예측 종가", y_predict[i] )
+
 
 
 plt.figure(figsize=(12, 9))
@@ -110,3 +123,18 @@ plt.show()
 #1/15일 예측 삼성 종가 :  90060
 
 
+#loss, mae :  1350901.125 883.1961059570312
+#RMSE :  1162.2826651221956
+#R2 :  0.9926943452143626
+#1/15일 예측 삼성 종가 :  89130
+
+#loss, mae :  1188342.125 684.1337280273438
+#RMSE :  1090.111061154947
+#R2 :  0.9935734614319652
+#1/15일 예측 삼성 종가 :  92576
+
+#loss, mae :  495872.65625 502.39056396484375
+#RMSE :  704.1822552945873
+#R2 :  0.9973183272453855
+#1/15일 예측 삼성 종가 :  92604
+#(20, 1)
