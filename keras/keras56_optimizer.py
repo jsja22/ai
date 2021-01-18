@@ -30,7 +30,7 @@ loss, mse = model.evaluate(x, y, batch_size= 1)
 y_pred = model.predict([11])
 print("loss:", loss, "결과물: ", y_pred)
 
-
+#
 ################Adam###########################(lr=0.01)
 #lr=0.001
 #loss: 4.435207843350719e-12 결과물:  [[10.999998]]

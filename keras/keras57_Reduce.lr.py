@@ -64,7 +64,7 @@ y_pred = model.predict(x_test[:-10])
 # print("y_pred : ", y_recovery)
 print("loss : ", result[0])
 print("accuracy : ", result[1])
-
+#
 # 시각화
 import matplotlib.pyplot as plt
 
