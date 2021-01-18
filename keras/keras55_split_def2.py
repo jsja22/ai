@@ -35,5 +35,5 @@ x, y = split_xy(data,  x_row, y_row,x_col,y_col)
 print(x)
 print(y)
 
-print(x.shape)  #(1080, 4, 3)
+print(x.shape)  #(1080, 4, 3)#
 print(y.shape)  #(1080, 2, 1)
