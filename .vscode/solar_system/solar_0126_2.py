@@ -140,7 +140,7 @@ def GHI1(DHI, DNI, season, hour):
     theta_z = radians(90) - (np.arcsin(np.sin(angle) *np.sin(latitude) +\
     np.cos(angle)*np.cos(latitude) * np.cos(altitude)))    
 
-    #GHI 구하기  ->DHI + DNIx(cos세타제트)
+    #GHI 구하기  ->DHI + DNIx(cos세타제트)#
     ghi = DHI + DNI * np.cos(theta_z)
     
     return ghi
