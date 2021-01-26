@@ -182,7 +182,7 @@ for i in range(48):
     elif i%2 == 1:
       minute = 30
     hour = int(i/2) 
-    # 내일!
+    
     for j in quantiles:
         
         print("##############내일 {}시,{}분, q_0.{} 훈련 시작!!###########".format(hour,minute,j))
@@ -192,7 +192,7 @@ for i in range(48):
         model.compile(loss = lambda y_true,y_pred: quantile_loss(j,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(j,y,y_pred)])
         model.fit(x_train,y1_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y1_val),callbacks = [es,cp,lr])
         
-    # 모레!
+    
     for j in quantiles:
         
         print("##############모레 {}시,{}분 q_0.{} 훈련 시작!!############".format(hour,minute,j))

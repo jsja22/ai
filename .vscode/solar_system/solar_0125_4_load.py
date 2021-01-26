@@ -117,8 +117,6 @@ df_train = preprocess_data(train)
 scale.fit(df_train.iloc[:,:-2])
 df_train.iloc[:,:-2] = scale.transform(df_train.iloc[:,:-2])
 
-# 81개의 테스트일수를 (81, 48, 일수, 8) 로 나눠준다
-# 추후에 48개의 모델에 81번 돌린다!! 인풋 : (1, 일수, 6)
 x_test = []
 
 for i in range(81):
@@ -175,7 +173,7 @@ for i in range(48):
     elif i%2 == 1:
       minute = 30
     hour = int(i/2) 
-    # 내일!
+    
     for j in quantiles:
         
         print("##############내일 {}시,{}분, q_0.{} 훈련 시작!!###########".format(hour,minute,j))
@@ -195,7 +193,7 @@ for i in range(48):
             submission.loc[submission.id.str.contains(f"Day7_{hour}h00m"), [f"q_{j:.1f}"]] = num_temp1
         elif i%2 == 1:
             submission.loc[submission.id.str.contains(f"Day7_{hour}h30m"), [f"q_{j:.1f}"]] = num_temp1
-    # 모레!
+    
     for j in quantiles:
         
         print("##############모레 {}시,{}분 q_0.{} 훈련 시작!!############".format(hour,minute,j))
