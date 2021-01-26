@@ -1,3 +1,6 @@
+##WS 뺸거
+
+
 import pandas as pd
 import numpy as np
 import os
@@ -14,7 +17,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLRO
 from tensorflow.keras.losses import Huber
 from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
-import math
+import mathfrom math import radians
 #DHI - 수평면 산란일사량(Diffuse Horizontal Irradiance (W/m2))   (W/m2)     0 ~ 528
 #DNI - 직달일사량(Direct Normal Irradiance (W/m2))               (W/m2)     0 ~ 1569    
 #WS - 풍속(Wind Speed (m/s))                                     (m/s)      0.0 ~ 12.0
@@ -56,7 +59,7 @@ def split_to_seq(data):
     return np.array(tmp)
 def Conv1dml():
     model = Sequential()
-    model.add(Conv1D(256,2,padding = 'same', activation = 'relu',input_shape = (7,6)))
+    model.add(Conv1D(256,2,padding = 'same', activation = 'relu',input_shape = (7,7)))
     model.add(Conv1D(128,2,padding = 'same', activation = 'relu'))
     model.add(Conv1D(64,2,padding = 'same', activation = 'relu'))
     model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
@@ -67,15 +70,6 @@ def Conv1dml():
     model.add(Dense(8, activation = 'relu'))
     model.add(Dense(1))
     return model
-def season24(Date):
-  target = 0
-  for i in list24:
-    if Date < i:
-      target = list24.index(i) - 1
-      break
-  if Date < 5:
-    target = 23
-  return target
 
 def preprocess_data(data,is_train=True):
     #GHI 계산
@@ -86,12 +80,9 @@ def preprocess_data(data,is_train=True):
     #위도는 대한민국 10개 도시 평균 36도로 기준잡자!
     # SinρSinФ -> (np.sin(np.sin(train['declination']* np.sin(36))
     #시간각 구하기(w)   12시기준으로 12시 이후 1시간 단위로 15도씩 증가 12시 이전으로 1시간 단위로 -15도 씩 증가
-    data['season'] = data.apply(lambda x : )
-    
-    
-    
     angle = 15
-    noon = 12  
+    noon = 12 
+    latitude = radians(36)
     data['time_angle'] = [(x - noon ) * angle if x >= noon  else -(noon  - x) * angle for x in data.Hour]
 
     #일적위 구하기 -23.45*np.cos(360/365 *(x+10))
@@ -126,6 +117,8 @@ df_train = preprocess_data(train)
 scale.fit(df_train.iloc[:,:-2])
 df_train.iloc[:,:-2] = scale.transform(df_train.iloc[:,:-2])
 
+# 81개의 테스트일수를 (81, 48, 일수, 8) 로 나눠준다
+# 추후에 48개의 모델에 81번 돌린다!! 인풋 : (1, 일수, 6)
 x_test = []
 
 for i in range(81):
@@ -172,11 +165,11 @@ y2 = np.array(y2)
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 es = EarlyStopping(monitor = 'val_loss', patience = 20)
 lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 10, factor = 0.2, verbose = 1)
-epochs = 1000000
+epochs = 10000
 bs = 32
 
 for i in range(48):
-    x_train, x_val, y1_train, y1_val, y2_train, y2_val = train_test_split(x[i],y1[i],y2[i], train_size = 0.7,shuffle = True, random_state = 0)
+    #x_train, x_val, y1_train, y1_val, y2_train, y2_val = train_test_split(x[i],y1[i],y2[i], train_size = 0.7,shuffle = True, random_state = 0)
     if i%2 == 0:
       minute = 0
     elif i%2 == 1:
@@ -186,19 +179,45 @@ for i in range(48):
     for j in quantiles:
         
         print("##############내일 {}시,{}분, q_0.{} 훈련 시작!!###########".format(hour,minute,j))
-        model = Conv1dml()
+      
         filepath_cp = f'C:/data/modelcheckpoint/solar_checkpoint_0125_6{i:2d}_y1seq_{j:.1f}.hdf5'
-        cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
+        model = load_model(filepath_cp, compile = False)
         model.compile(loss = lambda y_true,y_pred: quantile_loss(j,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(j,y,y_pred)])
-        model.fit(x_train,y1_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y1_val),callbacks = [es,cp,lr])
-        
+        x = []
+        for k in range(81):
+            x.append(test[k,i])
+        x = np.array(x)
+        df_temp1 = pd.DataFrame(model.predict(x).round(2))
+        # df_temp1 = pd.concat(pred, axis = 0)
+        df_temp1[df_temp1<0] = 0
+        num_temp1 = df_temp1.to_numpy()
+        if i%2 == 0:
+            submission.loc[submission.id.str.contains(f"Day7_{hour}h00m"), [f"q_{j:.1f}"]] = num_temp1
+        elif i%2 == 1:
+            submission.loc[submission.id.str.contains(f"Day7_{hour}h30m"), [f"q_{j:.1f}"]] = num_temp1
     # 모레!
     for j in quantiles:
         
         print("##############모레 {}시,{}분 q_0.{} 훈련 시작!!############".format(hour,minute,j))
-        model = Conv1dml()
-        filepath_cp = f'C:/data/modelcheckpoint/solar_checkpoint_0125_6{i:2d}_y2seq_{j:.1f}.hdf5'
-        cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
-        model.compile(loss = lambda y_true,y_pred: quantile_loss(j,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(j,y,y_pred)])
-        model.fit(x_train,y2_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y2_val),callbacks = [es,cp,lr]) 
         
+        filepath_cp = f'C:/data/modelcheckpoint/solar_checkpoint_0125_6{i:2d}_y2seq_{j:.1f}.hdf5'
+        model = load_model(filepath_cp, compile = False)
+        model.compile(loss = lambda y_true,y_pred: quantile_loss(j,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(j,y,y_pred)])
+        
+        x = []
+        for k in range(81):
+            x.append(test[k,i])
+        x = np.array(x)
+        df_temp2 = pd.DataFrame(model.predict(x).round(2))
+        # df_temp1 = pd.concat(pred, axis = 0)
+        df_temp2[df_temp2<0] = 0
+        num_temp2 = df_temp2.to_numpy()
+        if i%2 == 0:
+            submission.loc[submission.id.str.contains(f"Day8_{hour}h00m"), [f"q_{j:.1f}"]] = num_temp2
+        elif i%2 == 1:
+            submission.loc[submission.id.str.contains(f"Day8_{hour}h30m"), [f"q_{j:.1f}"]] = num_temp2
+
+submission.to_csv('C:/data/csv/solar/sample_submission0125_last2.csv', index = False)
+
+
+#####WS뺀게 점수더 좋음!

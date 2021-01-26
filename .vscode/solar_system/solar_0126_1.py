@@ -15,6 +15,7 @@ from tensorflow.keras.losses import Huber
 from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
 import math
+from math import radians
 #DHI - 수평면 산란일사량(Diffuse Horizontal Irradiance (W/m2))   (W/m2)     0 ~ 528
 #DNI - 직달일사량(Direct Normal Irradiance (W/m2))               (W/m2)     0 ~ 1569    
 #WS - 풍속(Wind Speed (m/s))                                     (m/s)      0.0 ~ 12.0
@@ -28,6 +29,7 @@ train= pd.read_csv('C:/data/csv/solar/train/train.csv',index_col=None, header=0)
 print(train .shape)     #(52560, 9)
 print(train .tail())
 submission = pd.read_csv('C:/data/csv/solar/sample_submission.csv')
+
 
 from sklearn.preprocessing import StandardScaler
 scale = StandardScaler()
@@ -56,9 +58,9 @@ def split_to_seq(data):
     return np.array(tmp)
 def Conv1dml():
     model = Sequential()
-    model.add(Conv1D(256,2,padding = 'same', activation = 'relu',input_shape = (7,6)))
-    model.add(Conv1D(128,2,padding = 'same', activation = 'relu'))
+    model.add(Conv1D(128,2,padding = 'same', activation = 'relu',input_shape = (7,6)))
     model.add(Conv1D(64,2,padding = 'same', activation = 'relu'))
+    model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
     model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
     model.add(Flatten())
     model.add(Dense(64, activation = 'relu'))
@@ -67,17 +69,12 @@ def Conv1dml():
     model.add(Dense(8, activation = 'relu'))
     model.add(Dense(1))
     return model
-def season24(Date):
-  target = 0
-  for i in list24:
-    if Date < i:
-      target = list24.index(i) - 1
-      break
-  if Date < 5:
-    target = 23
-  return target
-
+        
 def preprocess_data(data,is_train=True):
+
+    data['Day365'] = data['Day']
+    data['Day365'] = data['Day365']%365
+    
     #GHI 계산
     #GHI = DHI + DNIx(cos세타제트)
     #Cosθz = CosФCosбCosω + SinρSinФ
@@ -86,20 +83,22 @@ def preprocess_data(data,is_train=True):
     #위도는 대한민국 10개 도시 평균 36도로 기준잡자!
     # SinρSinФ -> (np.sin(np.sin(train['declination']* np.sin(36))
     #시간각 구하기(w)   12시기준으로 12시 이후 1시간 단위로 15도씩 증가 12시 이전으로 1시간 단위로 -15도 씩 증가
-    data['season'] = data.apply(lambda x : )
-    
-    
-    
+    #여름은 100RH중 60~100RH정도되고,겨울은 100RH중 10~50RH정도 따라서 RH도 시즌을 구별할수있는 지표가 될 수 있다. 
+    ###########train, test를 시즌별로 나눠서 칼럼을 추가함 (시즌은 태양의 일출 일몰 시간에따라서 )
+  
     angle = 15
     noon = 12  
+    latitude = radians(36.01) #포항을 기준으로 함
+    #계절별로 위도가 다르기 때문에 세분화 해보자!
+
     data['time_angle'] = [(x - noon ) * angle if x >= noon  else -(noon  - x) * angle for x in data.Hour]
 
     #일적위 구하기 -23.45*np.cos(360/365 *(x+10))
-    data['declination'] = [-23.44 * np.cos(360 /365 *(x+10)) for x in data.Day]
-    
+    data['declination'] = [-23.44 * np.cos(360 /365 *(x+10)) for x in data.Day365]
+    a
     #cos세타제트 구하기  => CosФCosбCosω + SinρSinФ
-    data['theta_z'] = 90 - 1/(np.sin(np.sin(data['declination']) *np.sin(36) + \
-    np.cos(data['declination'])*np.cos(36) * np.cos(data['time_angle'])))    
+    data['theta_z'] = radians(90) - (np.arcsin(np.sin(data['declination']) *np.sin(latitude) +\
+    np.cos(data['declination'])*np.cos(latitude) * np.cos(data['time_angle'])))    
 
     #GHI 구하기  ->DHI + DNIx(cos세타제트)
     data['GHI'] = data.DHI + data.DNI * np.cos(data.theta_z)
@@ -120,9 +119,10 @@ def preprocess_data(data,is_train=True):
 
     elif is_train == False:
         return temp.iloc[-48*day:, :]
-
+    
 
 df_train = preprocess_data(train)
+
 scale.fit(df_train.iloc[:,:-2])
 df_train.iloc[:,:-2] = scale.transform(df_train.iloc[:,:-2])
 
@@ -173,7 +173,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCh
 es = EarlyStopping(monitor = 'val_loss', patience = 20)
 lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 10, factor = 0.2, verbose = 1)
 epochs = 1000000
-bs = 32
+bs = 16
 
 for i in range(48):
     x_train, x_val, y1_train, y1_val, y2_train, y2_val = train_test_split(x[i],y1[i],y2[i], train_size = 0.7,shuffle = True, random_state = 0)
@@ -187,7 +187,7 @@ for i in range(48):
         
         print("##############내일 {}시,{}분, q_0.{} 훈련 시작!!###########".format(hour,minute,j))
         model = Conv1dml()
-        filepath_cp = f'C:/data/modelcheckpoint/solar_checkpoint_0125_6{i:2d}_y1seq_{j:.1f}.hdf5'
+        filepath_cp = f'C:/data/modelcheckpoint/solar_checkpoint_0126_1{i:2d}_day1_{j:.1f}.hdf5'
         cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
         model.compile(loss = lambda y_true,y_pred: quantile_loss(j,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(j,y,y_pred)])
         model.fit(x_train,y1_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y1_val),callbacks = [es,cp,lr])
@@ -197,7 +197,7 @@ for i in range(48):
         
         print("##############모레 {}시,{}분 q_0.{} 훈련 시작!!############".format(hour,minute,j))
         model = Conv1dml()
-        filepath_cp = f'C:/data/modelcheckpoint/solar_checkpoint_0125_6{i:2d}_y2seq_{j:.1f}.hdf5'
+        filepath_cp = f'C:/data/modelcheckpoint/solar_checkpoint_0126_1{i:2d}_day2_{j:.1f}.hdf5'
         cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
         model.compile(loss = lambda y_true,y_pred: quantile_loss(j,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(j,y,y_pred)])
         model.fit(x_train,y2_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y2_val),callbacks = [es,cp,lr]) 
