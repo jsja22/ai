@@ -20,7 +20,7 @@ x_test= x_test.reshape(-1,32,32,3).astype('float32')/255
 onehot = OneHotEncoder()
 y_train = onehot.fit_transform(y_train.reshape(-1,1)).toarray()
 y_test = onehot.transform(y_test.reshape(-1,1)).toarray()
-
+print(y_train.shape)
 print(y_test.shape)
 model = Sequential()
 model.add(Conv2D(filters = 1024,kernel_size = 2, strides=1 , input_shape=(32,32,3),padding='valid'))
@@ -34,6 +34,9 @@ model.add(Dense(128,activation='relu'))
 model.add(Dense(64,activation='relu'))
 model.add(Dense(32,activation='relu'))
 model.add(Dense(10,activation='softmax'))
+
+model.summary()
+
 model.compile(loss = 'categorical_crossentropy',optimizer='adam',metrics = ['accuracy'])
 model.fit(x_train,y_train,validation_split=0.2,epochs=200,callbacks=[es],batch_size=16,verbose=1)
 
@@ -42,4 +45,4 @@ y_predict = model.predict(x_test)
 y_test = np.argmax(y_test,axis=-1)
 y_predict = np.argmax(y_predict,axis=-1)
 #cnn
- # loss: 2.5100 - accuracy: 0.6511
+ # loss: 2.5100 - accuracy: 0.651

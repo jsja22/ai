@@ -146,7 +146,7 @@ for q in ([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]):
     lr = ReduceLROnPlateau(monitor='val_loss', patience=10, factor=0.5, verbose=1)
 
     model.compile(loss=lambda y,f: tilted_loss(q,y,f), optimizer='adam')
-    model.fit(x, y, epochs=1, batch_size=128, validation_split=0.2, callbacks=[early_stopping, cp,lr], verbose=1)
+    model.fit(x, y, epochs=100, batch_size=128, validation_split=0.2, callbacks=[early_stopping, cp,lr], verbose=1)
     # model_1_path = 'C:/data/modelcheckpoint/solar_0120model1_{}.h5'.format(q)
     # #print(model_1_path.shape)
     # print(model_1_path)  
@@ -172,7 +172,7 @@ for q in ([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]):
     test_data = test_data.reshape(81*2*48,)
     sample.loc[:, "q_%d"%q] = test_data
     test_data = pd.DataFrame(test_data)
-    test_data.to_csv('C:/data/csv/predict1/0120predict3_{}.csv'.format(q))
+    test_data.to_csv('C:/data/csv/predict1/0121predict3_{}.csv'.format(q))
 
 #sample= sample.iloc[:,:-1]
 #sample.to_csv('C:/data/csv/solar/sample_submission5.csv', index=False)
@@ -190,7 +190,7 @@ for q in ([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]):
 
 pred1 = np.zeros((81*48*2,9))
 for i , num in enumerate([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]):
-    temp = pd.read_csv('C:/data/csv/predict1/0120predict3_'+str(num)+'.csv',index_col=None, header=0)
+    temp = pd.read_csv('C:/data/csv/predict1/0121predict3_'+str(num)+'.csv',index_col=None, header=0)
     #temp = pd.read_csv(file_path)
     temp.drop('Unnamed: 0', axis=1)
     temp = np.array(temp)
@@ -205,14 +205,12 @@ pred1 = pd.DataFrame(pred1)
 print(pred1.shape)
 print(pred1)
 """
-result = pd.read_csv('C:/data/csv/predict1/result2.csv')
+result = pd.read_csv('C:/data/csv/predict1/result3.csv')
 sample.iloc[1:, 1:] = result.to_numpy()
-print(result.shape)
-sample.iloc
 # #sample to numpy
 # submission = pd.concat([pred1])
 # submission[submission.values<0] = 0
 # sample.iloc[:, 1:] = submission.to_numpy()
-sample.to_csv('C:/data/csv/solar/sample/sample_submission2.csv',header=True, index=False)
+sample.to_csv('C:/data/csv/solar/sample/sample_submission3.csv',header=True, index=False)
 
 

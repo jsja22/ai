@@ -218,4 +218,4 @@ for i in range(48):
 submission.to_csv('C:/data/csv/solar/sample_submission0125_last2.csv', index = False)
 
 
-#####WS뺀게 점수더 좋음!
+#####WS뺀게 점수더 좋음!#

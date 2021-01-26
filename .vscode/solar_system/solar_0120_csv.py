@@ -4,9 +4,9 @@ import os
 
 input_file = 'C:/data/csv/predict1/'
 
-output_file = 'C:/data/csv/predict1/result2.csv'
+output_file = 'C:/data/csv/predict1/result4.csv'
 
-allFile_list = glob.glob(os.path.join(input_file, '0120predict3_*'))
+allFile_list = glob.glob(os.path.join(input_file, '0121predict3_*'))
 
 print(allFile_list)
 allData = []

@@ -46,9 +46,9 @@ def season24(Date):
     target = 23
   return target
 
-def sep_season(date):
-  date1_1 = date(2020,1,1)
-  results = (data-date1_1).days
+def sep_season(when):
+  date1_1 = when(2020,1,1)
+  results = (when-date1_1).days
   return results
 
 m=60

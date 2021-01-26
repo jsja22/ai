@@ -191,7 +191,7 @@ for i in range(48):
         cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
         model.compile(loss = lambda y_true,y_pred: quantile_loss(j,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(j,y,y_pred)])
         model.fit(x_train,y1_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y1_val),callbacks = [es,cp,lr])
-        
+        #
     
     for j in quantiles:
         
