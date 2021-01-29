@@ -28,6 +28,12 @@ date_time_before = date_now_before.strftime('%H%M%S')
 from sklearn.model_selection import train_test_split
 
 x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.2,shuffle=True,random_state=66)
+
+# scalar = MinMaxScaler()
+# scalar.fit(x_train)
+# x_train=scalar.transform(x_train)
+# x_test = scalar.transform(x_test)
+
 kfold = KFold(n_splits=5, shuffle=True) 
 parameters = [
     {'n_estimators' : [100,200],'max_depth' : [6,8,10,12],'min_samples_leaf': [3,5,7,10],'min_samples_split': [2,3,5,10]},
