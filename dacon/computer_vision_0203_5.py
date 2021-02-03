@@ -27,7 +27,7 @@ test2 = test.drop(['id','letter'],1)
 train2 = train2.values
 test2 = test2.values
 
-plt.imshow(train2[2047].reshape(28,28))
+plt.imshow(train2[100].reshape(28,28))
 
 
 
@@ -40,20 +40,20 @@ train2 = train2/255.0
 test2 = test2/255.0
 
 # ImageDatagenerator & data augmentation
-idg = ImageDataGenerator(rotation_range=20,rescale=1./255,shear_range=0.2,height_shift_range=(-1,1),width_shift_range=(-1,1)) #augmentation 인자를 지정
+idg = ImageDataGenerator(height_shift_range=0.2,width_shift_range=0.2) #augmentation 인자를 지정
 idg2 = ImageDataGenerator()
 
 # show augmented image data
-sample_data = train2[2047].copy()
+sample_data = train2[100].copy()
 print(sample_data.shape)#(28,28,1)
 sample = expand_dims(sample_data,axis=0)  #expand_dims차원늘려주기 axis = 0 이면 (1,28,28,1) axis = 1이면 (28, 1, 28, 1)이런식
-sample_datagen = ImageDataGenerator(rotation_range=20,rescale=1./255,shear_range=0.2,height_shift_range=(-1,1), width_shift_range=(-1,1))
+sample_datagen = ImageDataGenerator(height_shift_range=0.2, width_shift_range=0.2)
 sample_generator = sample_datagen.flow(sample, batch_size=1)
 
 plt.figure(figsize=(16,10))
 
-for i in range(36) : 
-    plt.subplot(6,6,i+1)
+for i in range(16) : 
+    plt.subplot(4,4,i+1)
     sample_batch = sample_generator.next()
     sample_image=sample_batch[0]
     plt.imshow(sample_image.reshape(28,28))
@@ -62,8 +62,8 @@ plt.show()
 # cross validation
 skf = StratifiedKFold(n_splits=40, random_state=42, shuffle=True)
 
-reLR = ReduceLROnPlateau(patience=30,verbose=1,factor=0.5) #learning rate scheduler
-es = EarlyStopping(patience=60, verbose=1,mode='auto')
+reLR = ReduceLROnPlateau(patience=60,verbose=1,factor=0.5) #learning rate scheduler
+es = EarlyStopping(patience=120, verbose=1,mode='auto')
 
 val_loss_min = []
 result = 0
@@ -71,7 +71,7 @@ nth = 0
 
 for train_index, valid_index in skf.split(train2,train['digit']) :
     
-    mc = ModelCheckpoint('C:/data/computer vision/h5/Dacon_computer_vision_0203_1.h5',save_best_only=True, verbose=1)
+    mc = ModelCheckpoint('C:/data/computer vision/h5/Dacon_computer_vision_0203_6.h5',save_best_only=True, verbose=1)
     
     x_train = train2[train_index]
     x_valid = train2[valid_index]    
@@ -84,26 +84,23 @@ for train_index, valid_index in skf.split(train2,train['digit']) :
     
     model = Sequential()
     
-    model.add(Conv2D(16,(3,3),activation='relu',input_shape=(28,28,1),padding='same'))
+    model.add(Conv2D(32,(3,3),activation='relu',input_shape=(28,28,1),padding='same'))
     model.add(BatchNormalization())
+    model.add(Dropout(0.3))
+    model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(32,(3,3),activation='relu',padding='same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(32,(5,5),activation='relu',padding='same'))
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D((2,2)))
     model.add(Dropout(0.3))
     
     model.add(Conv2D(32,(3,3),activation='relu',padding='same'))
     model.add(BatchNormalization())
-    model.add(Conv2D(32,(5,5),activation='relu',padding='same')) 
-    model.add(BatchNormalization())
-    model.add(Conv2D(32,(5,5),activation='relu',padding='same'))
-    model.add(BatchNormalization())
-    model.add(Conv2D(32,(5,5),activation='relu',padding='same'))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D((3,3)))
-    model.add(Dropout(0.3))
-    
-    model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
-    model.add(BatchNormalization())
     model.add(Conv2D(64,(5,5),activation='relu',padding='same')) 
     model.add(BatchNormalization())
-    model.add(MaxPooling2D((3,3)))
+    model.add(MaxPooling2D((2,2)))
     model.add(Dropout(0.3))
     
     model.add(Flatten())
@@ -117,12 +114,12 @@ for train_index, valid_index in skf.split(train2,train['digit']) :
 
     model.add(Dense(10,activation='softmax'))
     
-    model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.002,epsilon=None),metrics=['acc'])
+    model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=0.001,epsilon=None),metrics=['acc'])
     
     learning_history = model.fit_generator(train_generator,epochs=1000, validation_data=valid_generator, callbacks=[es,mc,reLR])
     
     # predict
-    model.load_weights('C:/data/computer vision/h5/Dacon_computer_vision_0203_1.h5')
+    model.load_weights('C:/data/computer vision/h5/Dacon_computer_vision_0203_6.h5')
     result += model.predict_generator(test_generator,verbose=True)/40
     
     # save val_loss
@@ -133,4 +130,4 @@ for train_index, valid_index in skf.split(train2,train['digit']) :
     print(nth, '번째 학습을 완료했습니다.')
 
 sub['digit'] = result.argmax(1)
-sub.to_csv('C:/data/computer vision/csv/Dacon_computer_vision_0203_1.csv',index=False)
+sub.to_csv('C:/data/computer vision/csv/Dacon_computer_vision_0203_6.csv',index=False)
