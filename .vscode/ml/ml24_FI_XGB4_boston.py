@@ -1,21 +1,21 @@
 import numpy as np
 import pandas as pd
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import load_boston
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from xgboost import XGBClassifier
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from xgboost import XGBClassifier, XGBRegressor
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings('ignore')
 
 #1. 데이터 지정, 전처리
-dataset = load_breast_cancer()
+dataset = load_boston()
 x = dataset.data
 y = dataset.target
 x_train,x_test,y_train,y_test = train_test_split(x, y, test_size=0.2, random_state=519)
 
 #2. 모델(모델1)
-model = XGBClassifier(n_jobs=-1) 
+model = XGBRegressor(n_jobs=-1)
 
 #3. 컴파일ㄴ 훈련ㅇ
 model.fit(x_train, y_train)
@@ -64,7 +64,7 @@ print('feature_names_2: \n',cut_columns(model.feature_importances_, dataset.feat
 x2_train, x2_test, y_train, y_test = train_test_split(x2.values, y, test_size = 0.2, shuffle=True, random_state= 519)
 
 #2. 모델1과 동일
-model2 = XGBClassifier(n_jobs=-1) 
+model2 = XGBRegressor(n_jobs=-1)
 
 #3. 컴파일ㄴ 훈련ㅇ
 model2.fit(x2_train, y_train)

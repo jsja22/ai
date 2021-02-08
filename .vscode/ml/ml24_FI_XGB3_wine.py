@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from xgboost import XGBClassifier
@@ -9,10 +9,15 @@ import warnings
 warnings.filterwarnings('ignore')
 
 #1. 데이터 지정, 전처리
-dataset = load_breast_cancer()
+dataset = load_wine()
 x = dataset.data
 y = dataset.target
 x_train,x_test,y_train,y_test = train_test_split(x, y, test_size=0.2, random_state=519)
+
+print(x_train.shape)
+print(x_test.shape)
+print(y_train.shape)
+print(y_test.shape)
 
 #2. 모델(모델1)
 model = XGBClassifier(n_jobs=-1) 
@@ -56,9 +61,9 @@ def cut_columns(feature_importances, columns, number):
 # x데이터를 솎은 모델을 만들자(모델2)
 x2 = pd.DataFrame(dataset.data, columns = dataset.feature_names)
 # 필요한 만큼만 위의 함수를 이용해 남기기
-x2.drop(cut_columns(model.feature_importances_, dataset.feature_names, 3), axis=1, inplace=True)
+x2.drop(cut_columns(model.feature_importances_, dataset.feature_names, 4), axis=1, inplace=True)
 # 내가 남긴 것들의 칼럼명 출력
-print('feature_names_2: \n',cut_columns(model.feature_importances_, dataset.feature_names, 3))
+print('feature_names_2: \n',cut_columns(model.feature_importances_, dataset.feature_names, 4))
 
 # 모델2를 위한 전처리(x가 x2로 변경, random_state 동일하게 유지)
 x2_train, x2_test, y_train, y_test = train_test_split(x2.values, y, test_size = 0.2, shuffle=True, random_state= 519)
