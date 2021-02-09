@@ -42,11 +42,14 @@ hyperparameters = create_hyperparameters()
 model2 = build_model()
 
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
-from sklearn.pipeline import Pipeline, make_pipeline
+from sklearn.pipeline import Pipeline, make_pipeline  
 model2 = KerasClassifier(build_fn=build_model, epochs=1, batch_size=32, verbose=1)   #머신러닝이 keras보다 먼저 나왔기에 무언가 알아먹게 해줘야하는데 그것이 이두줄로 정의된다.
 #keras모델을 래핑을 해야 그리드서치나 랜덤서치가 알아먹는다
 
 kfold = KFold(n_splits=3, random_state=66)
+
+#Pipeline에서는 우리가 clf 이런식으로 이름을 정의할 수 있지만 make_pipeline에서는 kerasclassifier_ 과함께 정의되어있는는걸 사용해줘야함!
+
 pipe = Pipeline([("scaler",MinMaxScaler()),('clf',model2)])
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 search = GridSearchCV(pipe,hyperparameters,cv=kfold )
