@@ -76,11 +76,11 @@ model.summary()
 
 model.compile(loss='binary_crossentropy',optimizer='adam', metrics=['acc'])
 #print(xy_train.samples) #1389
-cp = ModelCheckpoint('C:/data/modelcheckpoint/my2.hdf5') 
-es = EarlyStopping(monitor = 'val_loss', patience = 15)
-lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 6, factor = 0.5, verbose = 1)
-history = model.fit_generator(xy_train, steps_per_epoch=1389/14 ,epochs=100, validation_data=xy_test, validation_steps=1389/14,callbacks=[es,lr,cp])
-'''
+# cp = ModelCheckpoint('C:/data/modelcheckpoint/my2.hdf5') 
+# es = EarlyStopping(monitor = 'val_acc', patience = 15)
+# lr = ReduceLROnPlateau(monitor = 'val_acc', patience = 6, factor = 0.5, verbose = 1)
+# history = model.fit_generator(xy_train, steps_per_epoch=1389/14 ,epochs=100, validation_data=xy_test, validation_steps=1389/14,callbacks=[es,lr,cp])
+
 model2 = load_model('C:/data/modelcheckpoint/my2.hdf5', compile=False)
 # model.save_weights('C:/data/h5/k67_4_weight.h5')
 # model.load_weights('C:/data/h5/k67_4_weight.h5')
@@ -89,7 +89,7 @@ result = model.predict_generator(x_pred,verbose=True)
 print(result)
 print("남자일 확률은",result*100,"%입니다.")
 
-for i in range(2):
+for i in range(3):
     filepath = 'C:/data/image/my2/%d.jpg'%i
     img = Image.open(filepath)
     img = img.convert("RGB")
@@ -107,17 +107,18 @@ for i in range(2):
     print(y_pred)
     # result = [np.argmax(value) for value in y_pred] # 예측 값중 가장 높은 클래스 반환
     # print(result)
-    print('photo : ',categories[i])
+
     if y_pred >0.5:
+        print('photo : ',categories[0])
         print("남자일 확률 ",np.round(y_pred*100,2), '%')
     elif y_pred <0.5:
+        print('photo : ',categories[1])
         print("여자일 확률 ",np.round((1-y_pred)*100,2), '%')
-    elif y_pred =0.5:
+    elif y_pred == 0.5:
         print("중성입니다.")
     # print('New image prediction : ',categories[result[0]])
     # #print("accuracy : {}".format(max(pred[0][0],pred[0][1])))
     # print("accuracy : {}".format(max(pred[0])))
-    plt.subplot(2,1,i+1)
+    plt.subplot(3,1,i+1)
     plt.imshow(img)
 plt.show()
-'''
