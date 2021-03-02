@@ -16,25 +16,21 @@ from efficientnet_pytorch import EfficientNet
 import matplotlib.pyplot as plt
 from torch_poly_lr_decay import PolynomialLRDecay
 import random
+import albumentations
 
-############pytorch 에서 gpu 사용하기############### 
-torch.set_num_threads(1)  #각 작업별로 CPU thread 1개를 사용하기 위해 torch.set_num_threads(1)를 사용
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") #특정 gpu에 연산이 할당됨.
+torch.set_num_threads(1)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+#data load
 labels_df = pd.read_csv('C:/data/computer_vision2/dirty_mnist_2nd_answer.csv')[:]
-imgs_dir = np.array(sorted(glob.glob('C:/data/computer_vision2/dirty_mnist_2nd/*')))[:]
-#print(imgs_dir.shape) #(50000,)
-
+imgs_dir = np.array(sorted(glob.glob('C:/data/computer_vision2/dirty_mnist_2/dirty_mnist_2nd/*')))[:]
 labels = np.array(labels_df.values[:,1:])
-#print(labels.shape) #(50000, 26)
 
-test_imgs_dir = np.array(sorted(glob.glob('C:/data/computer_vision2/test_dirty_mnist_2nd/*')))
-print(test_imgs_dir.shape) #(5000,)
+test_imgs_dir = np.array(sorted(glob.glob('C:/data/computer_vision2/dirty_mnist_2/test_dirty_mnist_2nd/*')))
 
 imgs=[]
 for path in tqdm(imgs_dir[:]):
-    img=cv2.imread(path, cv2.IMREAD_COLOR)  #train 데이터를 color로 불러오는 과정 imgs list에 추가하여 배열 형태로 저장 
-  
+    img=cv2.imread(path, cv2.IMREAD_COLOR)
     imgs.append(img)
 imgs=np.array(imgs)
 
@@ -63,8 +59,6 @@ class MnistDataset_v1(Dataset):
         
         pass
     
-
-
 # 메모리에서 load
 class MnistDataset_v2(Dataset):
     def __init__(self, imgs=None, labels=None, transform=None, train=True):
@@ -72,6 +66,19 @@ class MnistDataset_v2(Dataset):
         self.labels = labels
         self.transform = transform
         self.train=train
+        #(TTA)test data augmentations#
+        self.aug = albumentations.Compose ([ 
+                   albumentations.RandomResizedCrop (256, 256), 
+                    albumentations.Transpose (p = 0.5), 
+                    albumentations.HorizontalFlip (p = 0.5), 
+                    albumentations.VerticalFlip (p = 0.5),
+                    albumentations.HueSaturationValue(
+                        hue_shift_limit=0.2, 
+                        sat_shift_limit=0.2,
+                        val_shift_limit=0.2, 
+                        p=0.5
+                    )
+                ], p=1.)
         pass
     
     def __len__(self):
@@ -89,6 +96,7 @@ class MnistDataset_v2(Dataset):
         else:
             return img
 
+
 def seed_everything(seed: int = 42):
     random.seed(seed)
     np.random.seed(seed)
@@ -98,13 +106,11 @@ def seed_everything(seed: int = 42):
     torch.backends.cudnn.deterministic = True  # type: ignore
     torch.backends.cudnn.benchmark = True  
 
-# EfficientNet -b0(pretrained)
-# MultiLabel output
 
 class EfficientNet_MultiLabel(nn.Module):
     def __init__(self, in_channels):
         super(EfficientNet_MultiLabel, self).__init__()
-        self.network = EfficientNet.from_pretrained('efficientnet-b2', in_channels=in_channels)
+        self.network = EfficientNet.from_pretrained('efficientnet-b4', in_channels=in_channels) # b3, b7 
         self.output_layer = nn.Linear(1000, 26)
 
     def forward(self, x):
@@ -112,23 +118,20 @@ class EfficientNet_MultiLabel(nn.Module):
         x = torch.sigmoid(self.output_layer(x))
         return x
 
+
 # 해당 코드에서는 1fold만 실행
 
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
 folds=[]
 for train_idx, valid_idx in kf.split(imgs):
     folds.append((train_idx, valid_idx))
-
-### seed_everything(42)
-
+=
 # 5개의 fold 모두 실행하려면 for문을 5번 돌리면 됩니다.
-for fold in range(2):
+for fold in range(1):
     model = EfficientNet_MultiLabel(in_channels=3).to(device)
-#     model = nn.DataParallel(model)
+# model = nn.DataParallel(model)
     train_idx = folds[fold][0]
     valid_idx = folds[fold][1]
-
-
 
     train_transform = transforms.Compose([
         transforms.ToTensor(),
@@ -139,29 +142,24 @@ for fold in range(2):
         transforms.ToTensor(),
         ])
 
-
-    epochs=40
-    batch_size= 32         # 자신의 VRAM에 맞게 조절해야 OOM을 피할 수 있습니다.
-    
-    
+    epochs=30
+    batch_size=8        # 자신의 VRAM에 맞게 조절해야 OOM을 피할 수 있습니다.
     
     # Data Loader
     train_dataset = MnistDataset_v2(imgs = imgs[train_idx], labels=labels[train_idx], transform=train_transform)
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
     valid_dataset = MnistDataset_v2(imgs = imgs[valid_idx], labels = labels[valid_idx], transform=valid_transform)
-    valid_loader = DataLoader(dataset=valid_dataset, batch_size=batch_size, shuffle=False)       
-    
+    valid_loader = DataLoader(dataset=valid_dataset, batch_size=batch_size, shuffle=False) 
     
     # optimizer
     # polynomial optimizer를 사용합니다.
     # 
     optimizer = torch.optim.Adam(model.parameters(), lr = 1e-3)
     decay_steps = (len(train_dataset)//batch_size)*epochs
-    scheduler_poly_lr_decay = PolynomialLRDecay(optimizer, max_decay_steps=decay_steps, end_learning_rate=1e-6, power=0.9)
+    scheduler_poly_lr_decay = PolynomialLRDecay(optimizer, max_decay_steps=decay_steps, end_learning_rate=1e-5, power=0.9)
 
     criterion = torch.nn.BCELoss()
-    
     
     epoch_accuracy = []
     valid_accuracy = []
@@ -176,14 +174,12 @@ for fold in range(2):
             X = torch.tensor(X, device=device, dtype=torch.float32)
             y = torch.tensor(y, device=device, dtype=torch.float32)
             y_hat = model(X)
-            
-            
+                        
             optimizer.zero_grad()
             loss = criterion(y_hat, y)
             loss.backward()
             optimizer.step()
             scheduler_poly_lr_decay.step()
-
             
             y_hat  = y_hat.cpu().detach().numpy()
             y_hat = y_hat>0.5
@@ -205,8 +201,7 @@ for fold in range(2):
                 valid_loss = criterion(y_valid_hat, y_valid).item()
                 
                 y_valid_hat = y_valid_hat.cpu().detach().numpy()>0.5
-                
-                
+                                
                 valid_batch_loss.append(valid_loss)
                 valid_batch_accuracy.append((y_valid_hat == y_valid.cpu().detach().numpy()).mean())
                 
@@ -214,7 +209,7 @@ for fold in range(2):
             valid_accuracy.append(np.mean(valid_batch_accuracy))
             
         if np.mean(valid_batch_accuracy)>valid_best_accuracy:
-            torch.save(model.state_dict(), 'C:/data/computer_vision2/modelcheckpoint/EfficientNetB4-fold_0225_02{}.pt'.format(fold))
+            torch.save(model.state_dict(), 'C:/data/computer_vision2/model/0226_EfficientNetB4-fold{}.pt'.format(fold))
             valid_best_accuracy = np.mean(valid_batch_accuracy)
         print('fold : {}\tepoch : {:02d}\ttrain_accuracy / loss : {:.5f} / {:.5f}\tvalid_accuracy / loss : {:.5f} / {:.5f}\ttime : {:.0f}'.format(fold+1, epoch+1,
                                                                                                                                               np.mean(batch_accuracy_list),
@@ -233,12 +228,13 @@ test_transform = transforms.Compose([
         transforms.ToTensor(),
         ])
 
+
 submission = pd.read_csv('C:/data/computer_vision2/sample_submission.csv')
 
 with torch.no_grad():
     for fold in range(1):
         model = EfficientNet_MultiLabel(in_channels=3).to(device)
-        model.load_state_dict(torch.load('C:/data/computer_vision2/modelcheckpoint/EfficientNetB4-fold_0225_02{}.pt'.format(fold)))
+        model.load_state_dict(torch.load('C:/data/computer_vision2/model/0226_EfficientNetB4-fold{}.pt'.format(fold)))
         model.eval()
 
         test_dataset = MnistDataset_v2(imgs = test_imgs, transform=test_transform, train=False)
@@ -250,5 +246,7 @@ with torch.no_grad():
                 model.eval()
                 pred_test = model(X_test).cpu().detach().numpy()
                 submission.iloc[n*32:(n+1)*32,1:] += pred_test
+
+=
 submission.iloc[:,1:] = np.where(submission.values[:,1:]>=0.5, 1,0)
-submission.to_csv('C:/data/computer_vision2/EfficientNetB4-fold0_0225_02.csv', index=False)
+submission.to_csv('C:/data/computer_vision2/submission/0227_1.csv', index=False)
