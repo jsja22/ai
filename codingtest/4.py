@@ -17,5 +17,4 @@ def solution(answers):
         if 
 answers = []
 answers.append([2,2,4,5,4]*2000)
-
 print(solution(answers))
