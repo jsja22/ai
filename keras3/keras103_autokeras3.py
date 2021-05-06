@@ -18,7 +18,7 @@ model = ak.ImageClassifier(
     loss= 'mse',
     metrics = ['acc']
 )
-#
+###########
 #model.summary()
 #모델을 자동으로 완성된 다음에 서머리가 나온다 
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
