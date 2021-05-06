@@ -70,8 +70,8 @@ print(test_size) #9600
 
 train_dataset, test_dataset = torch.utils.data.random_split(image_datasets, [train_size,test_size])
 
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size = 32, shuffle = True )
-valid_loader = torch.utils.data.DataLoader(test_dataset, batch_size = 32, shuffle = False )
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size = 16, shuffle = True )
+valid_loader = torch.utils.data.DataLoader(test_dataset, batch_size = 16, shuffle = False )
 
 root = pathlib.Path(TRAIN_PATH)
 classe = sorted([j.name.split('/')[-1] for j in root.iterdir()])

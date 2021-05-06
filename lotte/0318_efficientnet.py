@@ -11,7 +11,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.optimizers import Adam,SGD
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.applications.efficientnet import preprocess_input
-from tensorflow.keras.applications import EfficientNetB4
+from tensorflow.keras.applications import EfficientNetB0
 import datetime
 from time import time
 from sklearn.model_selection import train_test_split
@@ -26,8 +26,8 @@ EPOCH = 30
 OPTIMIZER =Adam(learning_rate= 1e-3)
 
 #data load
-x = np.load("C:/data/LPD_competition/npy/P_project_x6.npy",allow_pickle=True)
-y = np.load("C:/data/LPD_competition/npy/P_project_y6.npy",allow_pickle=True)
+x = np.load("C:/data/LPD_competition/npy/P_project_x5.npy",allow_pickle=True)
+y = np.load("C:/data/LPD_competition/npy/P_project_y5.npy",allow_pickle=True)
 x_pred = np.load('C:/data/LPD_competition/npy/test_224.npy',allow_pickle=True)
 
 #print(x.shape) # (48000, 224, 224, 3)
@@ -54,7 +54,7 @@ from tensorflow.python.keras.activations import swish
 from keras.layers import Activation
 get_custom_objects().update({'swish': Activation(swish)})
 
-md = EfficientNetB4(input_shape = IMAGE_SIZE, weights = "imagenet", include_top = False)
+md = EfficientNetB0(input_shape = IMAGE_SIZE, weights = "imagenet", include_top = False)
 for layer in md.layers:
     layer.trainable = True
 x = md.output
@@ -70,7 +70,7 @@ model.summary()
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-cp = ModelCheckpoint('C:/data/LPD_competition/modelcheckpoint/0319_efficientnet2.h5',save_best_only=True, verbose=1)
+cp = ModelCheckpoint('C:/data/LPD_competition/modelcheckpoint/0322_efficientnet2.h5',save_best_only=True, verbose=1)
 early_stopping = EarlyStopping(monitor='val_accuracy',patience= 5)
 lr = ReduceLROnPlateau(monitor='val_loss',patience= 3, factor=0.2)
 
@@ -78,15 +78,15 @@ model.compile(loss='sparse_categorical_crossentropy', optimizer=OPTIMIZER,
                 metrics=['acc'])
 
 t1 = time()       
-# history = model.fit_generator(train_generator,
-#     validation_data=valid_generator, epochs=EPOCH, steps_per_epoch=len(train_generator), 
-#                     validation_steps=len(valid_generator),callbacks=[early_stopping,lr,cp])
+history = model.fit_generator(train_generator,
+    validation_data=valid_generator, epochs=EPOCH, steps_per_epoch=len(train_generator), 
+                    validation_steps=len(valid_generator),callbacks=[early_stopping,lr,cp])
 
 
 t2 = time()
 print("execution time: ", t2 - t1)
 # predict
-model.load_weights('C:/data/LPD_competition/modelcheckpoint/0319_efficientnet2.h5')
+model.load_weights('C:/data/LPD_competition/modelcheckpoint/0322_efficientnet2.h5')
 score = model.evaluate(valid_generator)
 print("Test Data acc : ", score[1])
 

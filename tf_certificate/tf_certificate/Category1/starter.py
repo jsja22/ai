@@ -32,16 +32,16 @@ def solution_model():
 
     # YOUR CODE HERE
     model = Sequential()
-    model.add(Dense(128, activation= 'linear', input_dim = 1))
+    model.add(Dense(128, activation='linear', input_dim = 1))
     model.add(Dense(64, activation='linear'))
     model.add(Dense(32, activation='linear'))
     model.add(Dense(16, activation='linear'))
-    model.add(Dense(8, activation='linear'))
-    model.add(Dense(1, activation = 'linear'))
-    
-    model.compile(optimizer = 'adam', loss = 'mse')
-    model.fit(xs, ys, batch_size= 1, epochs = 200)
+    model.add(Dense(1, activation='linear'))
+
+    model.compile(optimizer='adam', loss='mse')
+    model.fit(xs,ys,batch_size=8,epochs=100)
     return model
+
 
 
 # Note that you'll need to save your model as a .h5 like this.
@@ -50,5 +50,5 @@ def solution_model():
 # and the score will be returned to you.
 if __name__ == '__main__':
     model = solution_model()
-    model.save("C:/Users/bitcamp/study/tf_certificate/Category1/mymodel.h5")
-    print(model.predict([10.0])) # [[11.]]
+    model.save("C:/data/tf_certificate/category1/model1.h5")
+    print(model.predict([10.0])) #[[10.959312]]

@@ -103,10 +103,9 @@ from efficientnet_pytorch import EfficientNet
 class Classifier(nn.Module):
     def __init__(self):
         super(Classifier, self).__init__()
-        self.efficientnet =  EfficientNet.from_pretrained('efficientnet-b7')
+        self.efficientnet =  EfficientNet.from_pretrained('efficientnet-b4')
         self.dropout = nn.Dropout(0.3)
         self.l1 = nn.Linear(1000 , 256)
-        #self.gaussiandropout = nn.Gaussian(0.3)
         self.l2 = nn.Linear(256,1000)
         self.silu = nn.SiLU()
 

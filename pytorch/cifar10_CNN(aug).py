@@ -16,7 +16,7 @@ else:
 print('Using pytorch version:',torch.__version__,'Device:',DEVICE) #Using pytorch version: 1.7.1 Device: cuda
 
 BATCH_SIZE = 32
-EPOCHS = 10
+EPOCHS = 30
 
 
 #data load
@@ -140,4 +140,4 @@ for Epoch in range(1, EPOCHS+1):
 #[EPOCH: 10],    Test Loss: 0.0332,      Test Accuracy: 62.66 %
 
 #Data aug
-#[EPOCH: 10],    Test Loss: 0.0299,      Test Accuracy: 66.48 %
+#[EPOCH: 30],    Test Loss: 0.0292,      Test Accuracy: 68.67 %

@@ -26,48 +26,93 @@ import numpy as np
 import urllib
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-
+import matplotlib.pyplot as plt
+from tensorflow.keras.layers import Embedding, LSTM, Dense, Bidirectional
+from tensorflow.python.keras.layers.convolutional import Conv1D
+from tensorflow.python.keras.layers.pooling import GlobalAveragePooling1D
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
 def solution_model():
     url = 'https://storage.googleapis.com/download.tensorflow.org/data/sarcasm.json'
-    urllib.request.urlretrieve(url, 'C:/data/sarcasm.json')
+    urllib.request.urlretrieve(url, 'sarcasm.json')
 
     # DO NOT CHANGE THIS CODE OR THE TESTS MAY NOT WORK
     vocab_size = 1000
     embedding_dim = 16
     max_length = 120
-    trunc_type='post'
-    padding_type='post'
+    trunc_type = 'post'
+    padding_type = 'post'
     oov_tok = "<OOV>"
     training_size = 20000
 
     sentences = []
     labels = []
-    # YOUR CODE HERE
-    with open('../data/sarcasm.json', 'r') as f:
-        dataset = json.load(f)
-    for item in dataset:
-        sentences.append(item['headline'])
-        labels.append(item['is_sarcastic'])
-    
-    token = Tokenizer(num_words = vocab_size, oov_token= oov_tok)
-    token.fit_on_texts(sentences)
-    sequence = token.texts_to_sequences(sentences)
-    '''
-    new_sentence = []
-    
-    training_size = 21367
-    # print(len(sentences)) 26709
-    x_train = sentences[0:training_size]
-    x_test = sentences[training_size:]
-    y_train = labels[0:training_size]
-    y_test = labels[training_size:]
+
+    with open('sarcasm.json', 'r') as d:
+        datas = json.load(d)
+
+    for data in datas:
+        sentences.append(data['headline'])
+        labels.append(data['is_sarcastic'])
+
+    print(sentences[:5])
+    print(labels[:5])
+
+    training_size = 20000
+
+    train_sentences = sentences[0:training_size]
+    train_labels = labels[0:training_size]
+
+    valid_sentences = sentences[training_size:]
+    valid_labels = labels[training_size:]
+
+    tokenizer = Tokenizer(num_words=vocab_size, oov_token=oov_tok)
+    tokenizer.fit_on_texts(train_sentences)
+    # tokenizer.fit_on_texts(valid_sentences)
+
+    train_sequences = tokenizer.texts_to_sequences(train_sentences)
+    valid_sequences = tokenizer.texts_to_sequences(valid_sentences)
+
+    print(train_sequences[:5])
+    print(valid_sequences[:5])
+
+    train_padded = pad_sequences(train_sequences, truncating=trunc_type, padding=padding_type, maxlen=max_length)
+    valid_padded = pad_sequences(valid_sequences, truncating=trunc_type, padding=padding_type, maxlen=max_length)
+
+    train_labels = np.asarray(train_labels)
+    valid_labels = np.asarray(valid_labels)
+
+    print(train_padded.shape)  # (20000, 120)
+
+    # 변환전
+    sample = np.array(train_padded[0])
+    print(sample)
+
+    # 변환 후
+    x = Embedding(vocab_size, embedding_dim, input_length=max_length)
+    print(x(sample)[0])
+
     model = tf.keras.Sequential([
-    # YOUR CODE HERE. KEEP THIS OUTPUT LAYER INTACT OR TESTS MAY FAIL
+        tf.keras.layers.Embedding(vocab_size, embedding_dim, input_length=max_length),
+        tf.keras.layers.Conv1D(128, 5, activation='relu'),
+        tf.keras.layers.GlobalAveragePooling1D(),
+        tf.keras.layers.Dense(24, activation='relu'),
         tf.keras.layers.Dense(1, activation='sigmoid')
     ])
+
+    model.summary()
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    checkpoint_path = 'tmp_checkpoint.ckpt'
+    checkpoint = ModelCheckpoint(checkpoint_path,
+                                 save_weights_only=True,
+                                 save_best_only=True,
+                                 monitor='val_loss',
+                                 verbose=1)
+    model.fit(train_padded, train_labels, validation_data=(valid_padded, valid_labels), epochs=100,
+              callbacks=[checkpoint], )
+    model.load_weights(checkpoint_path)
     return model
-    '''
 
 
 # Note that you'll need to save your model as a .h5 like this.
@@ -76,4 +121,7 @@ def solution_model():
 # and the score will be returned to you.
 if __name__ == '__main__':
     model = solution_model()
-    # model.save("mymodel.h5")
+    model.save("C:/Users/bitcamp/study/tf_certificate/Category4/mymodel.h5")
+
+#loss: 0.0293 - accuracy: 0.9874 - val_loss: 2.7623 - val_accuracy: 0.7696
+

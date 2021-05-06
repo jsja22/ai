@@ -15,7 +15,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLRO
 from datetime import datetime
 p_path = os.getcwd()
 print(p_path)
-base_path = os.path.join('Renju4', '*/*.npz')
+base_path = os.path.join('Renju_con', '*/*.npz')
 
 npz_list = glob(base_path)
 print(npz_list)
@@ -27,11 +27,14 @@ for i in tqdm(npz_list):
     x_data.extend(data['inputs']) 
     y_data.extend(data['outputs'])  #append로 추가하면 안됨 로 추가하면 안됨 list요소 하나하나를 추가해야하니 expend 사용
 
+    print(y_data)
 
 x_data = np.array(x_data).reshape((-1,15,15,1))
 y_data = np.array(y_data).reshape((-1,225))
 print(x_data.shape) 
 print(y_data.shape) 
+#print(y_data)
+'''
 # (755268, 15, 15, 1)
 # (755268, 225)
 # (1964736, 15, 15, 1)
@@ -89,3 +92,4 @@ print(y_pred[y, x]*100,"%로 가장 predict값이 높은 다음 돌의 위치는
 # #6. loss: 0.0062 - acc: 0.7709 - val_loss: 0.0088 - val_acc: 0.6969  -> recent model
 # #val_loss: 0.0082 - val_acc: 0.8020 #epoch20
 # #7. last -> loss: 0.0043 - acc: 0.8348 - val_loss: 0.0063 - val_acc: 0.7852 , 7 8 0.99983644
+'''

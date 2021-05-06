@@ -22,35 +22,37 @@
 # (28,28) as the input shape only. If you amend this, the tests will fail.
 #
 import tensorflow as tf
-import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv1D, Flatten
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
-
 def solution_model():
     fashion_mnist = tf.keras.datasets.fashion_mnist
 
-    # YOUR CODE HERE
     (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
     # (60000, 28, 28) (60000,) (10000, 28, 28)
-    x_train = x_train / 255.
-    x_test = x_test / 255.
+    x_train / 255.
+    x_test / 255.
 
+
+    # YOUR CODE HERE
     model = Sequential()
-    model.add(Conv1D(256, 3, padding= 'valid', activation= 'relu', input_shape = (28,28)))
-    model.add(Conv1D(128, 3, padding= 'valid', activation= 'relu'))
+    model.add(Conv1D(128, 2, activation= 'relu', padding='same', input_shape=(28,28)))
+    model.add(Conv1D(64, 2, activation= 'relu', padding='same'))
+    model.add(Conv1D(32, 4 , activation= 'relu', padding='same'))
     model.add(Flatten())
-    model.add(Dense(64, activation = 'relu'))
-    model.add(Dense(32, activation = 'relu'))
-    model.add(Dense(16, activation = 'relu'))
-    model.add(Dense(10, activation = 'softmax'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(32, activation='relu'))
+    model.add(Dense(16, activation='relu'))
+    model.add(Dense(10, activation='softmax'))
 
-    es = EarlyStopping(patience = 10)
-    lr = ReduceLROnPlateau(factor = 0.25, patience = 5, verbose = 1)
+    model.summary()
+
+    es = EarlyStopping(monitor='val_acc', patience=8, mode='auto')
+    lr = ReduceLROnPlateau(factor=0.3, patience=5, verbose=1, mode='auto')
+
     model.compile(loss = 'sparse_categorical_crossentropy', optimizer = 'adam', metrics = 'acc')
-    model.fit(x_train, y_train, validation_split = 0.2, epochs = 1000, callbacks = [es, lr])
-
+    model.fit(x_train, y_train, batch_size=32, validation_split=0.2,epochs=200, callbacks=[es,lr] )
     return model
 
 
@@ -60,6 +62,6 @@ def solution_model():
 # and the score will be returned to you.
 if __name__ == '__main__':
     model = solution_model()
-    model.save("C:/Users/bitcamp/study/tf_certificate/Category2/mymodel.h5")
+    model.save("C:/data/tf_certificate/category2/mymodel2.h5")
 
-    #loss: 0.0691 - acc: 0.9759 - val_loss: 0.3694 - val_acc: 0.9066
+    #loss: 0.0691 - acc: 0.9761 - val_loss: 0.4719 - val_acc: 0.8976

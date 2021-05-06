@@ -1,3 +1,4 @@
+'''
 import pandas as pd
 from pandas import DataFrame
 import numpy as np
@@ -105,3 +106,26 @@ data['out']=y_pred_outliers
 outliers=data.loc[data['out']== -1]
 outlier_index=list(outliers.index)
 print(outlier_index)
+print('value count : ',data['out'].value_counts())  # 이상치 갯수 
+#PCA로 Isolation Forest 결과 확인
+
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+pca = PCA(n_components=3)
+scaler_reduce = pca.fit_transform(scaler_data)
+
+fig = plt.figure()
+ax = fig.add_subplot(111,projection='3d')
+ax.set_zlabel("x_composite_3")
+ax.scatter(scaler_reduce[:, 0], scaler_reduce[:, 1], zs=scaler_reduce[:, 2], s=4, lw=1, label="inliers",c="green")
+# Plot x's for the ground truth outliers
+ax.scatter(scaler_reduce[outlier_index,0],scaler_reduce[outlier_index,1], scaler_reduce[outlier_index,2],
+           lw=2, s=60, marker="x", c="red", label="outliers")
+ax.legend()
+plt.show()
+
+
+'''
+
