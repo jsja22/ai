@@ -3,8 +3,6 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 
-print(tf.__version__)
-'''
 #1. 데이터
 x_train = np.array([1,2,3,4,5])
 y_train = np.array([1,2,3,4,5])
@@ -13,31 +11,23 @@ y_test  = np.array([6,7,8])
 
 #2. 모델구성
 model = Sequential()
-model.add(Dense(100, input_dim=1, activation='relu' ))
-model.add(Dense(90))
-model.add(Dense(80))
-model.add(Dense(70))
-model.add(Dense(60))
-model.add(Dense(50))
-model.add(Dense(40))
-model.add(Dense(30))
-model.add(Dense(20))
-model.add(Dense(10))
-model.add(Dense(9))
-model.add(Dense(8))
-model.add(Dense(7))
-model.add(Dense(6))
-model.add(Dense(5))
+model.add(Dense(5, input_dim=1, activation='relu' ))
+model.add(Dense(4))
+model.add(Dense(3))
+model.add(Dense(2))
 model.add(Dense(1))
 
 #3. 컴파일, 훈련
-model.compile(loss='mse', optimizer='adam')
+#model.compile(loss='mse', optimizer='adam',metrics=['accuracy'])
+#model.compile(loss='mse', optimizer='adam',metrics=['mse'])
+model.compile(loss='mse', optimizer='adam',metrics=['mae'])
+
 model.fit(x_train, y_train, epochs =100, batch_size =1)
 
 #4. 평가, 예측
 loss = model.evaluate(x_test, y_test, batch_size=1)
 print("loss : ", loss)
 
-result = model.predict([9])
+#result = model.predict([9])
+result = model.predict([x_train])
 print("result : ", result)
-'''

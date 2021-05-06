@@ -3,8 +3,6 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 
-print(tf.__version__)
-'''
 #1. 데이터
 x_train = np.array([1,2,3,4,5])
 y_train = np.array([1,2,3,4,5])
@@ -40,4 +38,3 @@ print("loss : ", loss)
 
 result = model.predict([9])
 print("result : ", result)
-'''
