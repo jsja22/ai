@@ -23,5 +23,5 @@ def solution(name):
         
 name = "JEROEN"
 
-print(solution(name)) ##JAO -> [9,0,12]
+print(solution(name)) ##JAO -> [9,0,12]#
 
