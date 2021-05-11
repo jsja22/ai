@@ -10,7 +10,7 @@ for i in range(1,9):
     x.append(data)
 
 print(x)
-
+###########
 x = np.array(x)
 print(x.shape) #(3, 72000, 1)
 
