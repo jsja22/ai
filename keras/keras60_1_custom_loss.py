@@ -5,7 +5,7 @@ import tensorflow as tf
 def custom_mean_squared_error(y_true, y_pred):
     return tf.math.reduce_mean(tf.square(y_true - y_pred))  #mse와 같다. 원래값-예측값을 제곱한거를 평균으로 나눈값 
 
-#1. 데이터
+#1. 데이터data
 x = np.array([1,2,3,4,5,6,7,8]).astype('float32')
 y = np.array([1,2,3,4,5,6,7,8]).astype('float32')
 
