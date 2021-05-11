@@ -13,4 +13,4 @@ sub.Survived = np.where(res > 0.5, 1, 0).astype(int)
 
 sub.to_csv("C:/data/kaggle/csv/last.csv", index = False)
 sub['Survived'].mean()
-
+#result
