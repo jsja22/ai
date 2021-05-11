@@ -55,5 +55,5 @@ print(loss)
 #0.011724614538252354
 ###############LGBM#############딥러닝 모델 만들고나서 하자!
 #model = LGBMRegressor(objective='quantile', alpha=q,
-#                        n_estimators=10000, bagging_fraction=0.7, learning_rate=0.027, subsample=0.7) 
+##                       n_estimators=10000, bagging_fraction=0.7, learning_rate=0.027, subsample=0.7) 
                          #alphe 퀀타일의 범위 
