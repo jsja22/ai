@@ -43,4 +43,4 @@ print(loss)
 #quantile_loss
 #loss : 0.0060495175421237946
 
-#결과치는 quantile loss 가 압승
+#결과치는 quantile loss 가 압승#
