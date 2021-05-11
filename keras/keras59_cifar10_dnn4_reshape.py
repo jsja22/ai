@@ -1,7 +1,7 @@
 #다차원 댄스 모델?
 #(n,32,32,3) ->(n,32,32,3)
 #reshape layer use!
-
+#
 import numpy as np
 import matplotlib.pyplot as plt
 
