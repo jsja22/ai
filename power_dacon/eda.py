@@ -6,7 +6,7 @@ import plotly.express as px
 
 pd.options.plotting.backend = 'plotly'
 
-## plotly.io를 import 한 후 renderers 기본값을 꼭 "notebook_connected" 로 설정해주시기 바랍니다.
+#plotly.io를 import 한 후 renderers 기본값을 꼭 "notebook_connected" 로 설정해주시기 바랍니다.
 import plotly.io as pio
 pio.renderers.default = "notebook_connected"
 
